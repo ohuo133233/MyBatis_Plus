@@ -1,5 +1,6 @@
 package com.example.demo;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.demo.bean.User;
 import com.example.demo.mapper.UserMapper;
@@ -10,32 +11,59 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @SpringBootTest
 class MyBatisPlusApplicationTests {
     @Autowired
     private UserMapper userMapper;
 
-    // 查询
+    // 查询全部的User
     @Test
-    void selectList() {
+    void selectALlList() {
         List<User> users = userMapper.selectList(null);
         users.forEach(System.out::println);
     }
 
-
-    @Test
     // 分页查询
+    @Test
     public void testSelectPage() {
         Page<User> userPage = new Page<>(2, 3);
         Page<User> selectPage = userMapper.selectPage(userPage, null);
         selectPage.getRecords().forEach(System.out::println);
     }
 
+    // 按照主键查询
     @Test
     public void selectById() {
         User user = userMapper.selectById(6L);
         System.out.println(user);
+    }
+
+    // 多条件查询
+    @Test
+    public void selectMap() {
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("name", "1111");
+        List<User> users = userMapper.selectByMap(map);
+        users.forEach(System.out::println);
+    }
+
+    // mapper 查询
+    @Test
+    public void selectMapper() {
+        QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
+        // 判断name不等于null，age等于null,判断id等于5,email不等于666
+        // id大于4，大于对于4
+        userQueryWrapper.isNotNull("name")
+                .isNull("age")
+                .eq("id", 5)
+                .ne("email", "666")
+                .gt("id", 4)
+                .ge("id", 4);
+
+        List<Map<String, Object>> maps = userMapper.selectMaps(userQueryWrapper);
+        maps.forEach(System.out::println);
     }
 
     // 插入
@@ -45,9 +73,8 @@ class MyBatisPlusApplicationTests {
         user.setName("666");
         user.setEmail("666");
         user.setAge(6);
-        int insert = userMapper.insert(user);
-        System.out.println("insert: " + insert);
-        selectList();
+        userMapper.insert(user);
+        selectALlList();
     }
 
     // 更新
@@ -60,7 +87,27 @@ class MyBatisPlusApplicationTests {
         user.setId(1L);
         int updateById = userMapper.updateById(user);
         System.out.println("updateById: " + updateById);
-        selectList();
+        selectALlList();
+    }
+
+    // 删除
+    @Test
+    public void delete() {
+        int i = userMapper.deleteById(2L);
+        ArrayList<Integer> list = new ArrayList<>();
+        list.add(3);
+        list.add(4);
+        userMapper.deleteBatchIds(list);
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("name", "333");
+        userMapper.deleteByMap(map);
+    }
+
+    // 逻辑删除
+    @Test
+    public void logicDelete() {
+        int i = userMapper.deleteById(6L);
+        System.out.println("logicDelete ID: " + i);
     }
 
     // 乐观锁
@@ -81,36 +128,6 @@ class MyBatisPlusApplicationTests {
         int updateById = userMapper.updateById(user);
         System.out.println("updateById1: " + updateById1);
         System.out.println("updateById: " + updateById);
-        selectList();
-    }
-
-    @Test
-    // 多条件查询
-    public void testSelectMap() {
-        HashMap<String, Object> map = new HashMap<>();
-        map.put("name", "1111");
-        List<User> users = userMapper.selectByMap(map);
-        users.forEach(System.out::println);
-    }
-
-
-    // 删除
-    @Test
-    public void delete() {
-        int i = userMapper.deleteById(2L);
-        ArrayList<Integer> list = new ArrayList<>();
-        list.add(3);
-        list.add(4);
-        userMapper.deleteBatchIds(list);
-        HashMap<String, Object> map = new HashMap<>();
-        map.put("name", "333");
-        userMapper.deleteByMap(map);
-    }
-
-    // 逻辑删除
-    @Test
-    public void logicDelete() {
-        int i = userMapper.deleteById(6L);
-        System.out.println("logicDelete ID: " + i);
+        selectALlList();
     }
 }
